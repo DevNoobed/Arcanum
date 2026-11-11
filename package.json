@@ -1,0 +1,15 @@
+{
+  "name": "arcanum",
+  "version": "1.0.0",
+  "description": "Arcanum Desktop Environment",
+  "main": "desktop/main.js",
+  "author": "Dev",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^45.3.0",
+    "electron-reload": "^2.0.0-alpha.1"
+  }
+}

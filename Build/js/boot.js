@@ -6,12 +6,15 @@
 // Boot configuration
 const BOOT_CONFIG = {
     minimumDelay: 2000,
-    destination: "setup-help.html",
+
+    setupDestination: "setup-help.html",
+    updateDestination: "update.html",
 
     // Files required for the initial boot
     requiredFiles: [
         "css/loading.css",
-        "setup-help.html"
+        "setup-help.html",
+        "update.html"
     ]
 };
 
@@ -36,52 +39,75 @@ async function checkFile(path) {
 
 // Main boot sequence
 async function bootArcanum() {
-
     const status = document.getElementById("boot-status");
 
-    console.log("[ARCANUM OS] Starting boot sequence...");
+    try {
+        console.log("[ARCANUM OS] Starting boot sequence...");
 
-    // Step 1: Minimum boot delay
-    await delay(BOOT_CONFIG.minimumDelay);
+        // Step 1: Minimum boot delay
+        await delay(BOOT_CONFIG.minimumDelay);
 
-    status.textContent = "Checking system files...";
+        status.textContent = "Checking system files...";
 
-    // Step 2: Check required files
-    const results = await Promise.all(
-        BOOT_CONFIG.requiredFiles.map(async file => ({
-            file,
-            loaded: await checkFile(file)
-        }))
-    );
+        // Step 2: Check required files
+        const results = await Promise.all(
+            BOOT_CONFIG.requiredFiles.map(async file => ({
+                file,
+                loaded: await checkFile(file)
+            }))
+        );
 
-    // Step 3: Detect missing files
-    const missing = results.filter(
-        result => !result.loaded
-    );
+        // Step 3: Detect missing files
+        const missing = results.filter(
+            result => !result.loaded
+        );
 
-    if (missing.length > 0) {
+        if (missing.length > 0) {
+            console.error("[ARCANUM OS] Boot failed.");
 
-        console.error("[ARCANUM OS] Boot failed.");
+            missing.forEach(item => {
+                console.error("[MISSING FILE]", item.file);
+            });
 
-        missing.forEach(item => {
-            console.error("[MISSING FILE]", item.file);
-        });
+            status.textContent =
+                "BOOT ERROR: Required system files are missing.";
+
+            return;
+        }
+
+        console.log("[ARCANUM OS] System files verified.");
+
+        // Step 4: Read installation configuration
+        status.textContent = "Loading system configuration...";
+
+        const config = await window.arcanum.getConfig();
+
+        if (typeof config.setupCompleted !== "boolean") {
+            throw new Error("Invalid setup configuration.");
+        }
+
+        console.log("[ARCANUM OS] Configuration loaded.");
+
+        // Step 5: Determine startup destination
+        const destination = config.setupCompleted
+            ? BOOT_CONFIG.updateDestination
+            : BOOT_CONFIG.setupDestination;
+
+        status.textContent = config.setupCompleted
+            ? "System ready. Checking for updates..."
+            : "First-time setup required. Starting setup...";
+
+        // Step 6: Launch
+        await delay(300);
+
+        window.location.href = destination;
+
+    } catch (error) {
+        console.error("[ARCANUM OS] Boot error:", error);
 
         status.textContent =
-            "BOOT ERROR: Required system files are missing.";
-
-        return;
+            "BOOT ERROR: Unable to load system configuration.";
     }
-
-    // Step 4: System ready
-    console.log("[ARCANUM OS] All required files verified.");
-
-    status.textContent = "System ready. Starting Arcanum...";
-
-    // Step 5: Launch
-    await delay(300);
-
-    window.location.href = BOOT_CONFIG.destination;
 }
 
 // Start boot after the initial page has loaded
