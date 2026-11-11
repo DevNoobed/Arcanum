@@ -1,0 +1,27 @@
+
+/* =================================
+   ARCANUM GLOBAL BACKGROUND SYSTEM
+   ================================= */
+
+/* Default: HD */
+.arcanum-background {
+    background-image: url("../../assets/HD_BG.svg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* 4K Displays */
+@media (min-width: 2560px) {
+    .arcanum-background {
+        background-image: url("../../assets/4K_BG.svg");
+    }
+}
+
+/* 8K Displays */
+@media (min-width: 5120px) {
+    .arcanum-background {
+        background-image: url("../../assets/8K_BG.svg");
+    }
+}
